@@ -6,6 +6,20 @@
 
 Page Curl library for Jetpack Compose.
 
+> **This fork: Compose Multiplatform (Android + iOS).**
+> The `cmp` branch converts the library into a Compose Multiplatform module targeting
+> `android`, `iosArm64` and `iosSimulatorArm64`. All gesture, state and geometry code is
+> `commonMain`; the only platform-specific piece is the page-edge shadow
+> (`expect fun DrawScope.drawCurlPageShadow`): Android keeps the original
+> `Paint.setShadowLayer` blur, iOS draws a Compose-native gradient shadow.
+>
+> A multiplatform sample lives in `sample/` — `sample/shared` holds the demo UI
+> (one Kotlin codebase), `sample/androidApp` is the Android app, and `sample/iosApp`
+> is the Xcode app (project generated from `project.yml` via
+> [XcodeGen](https://github.com/yonaskolb/XcodeGen); the generated `.xcodeproj` is
+> committed, so XcodeGen is only needed to regenerate it). The legacy Android-only
+> `demo/` module is kept for reference but is no longer wired into the build.
+
 ## Motivation
 
 This library allows to create an effect of turning pages, which can be used in book reader applications, custom on-boarding screens or elsewhere.

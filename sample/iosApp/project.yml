@@ -1,0 +1,41 @@
+name: iosApp
+options:
+  bundleIdPrefix: eu.wewox.pagecurl
+  deploymentTarget:
+    iOS: "15.0"
+targets:
+  iosApp:
+    type: application
+    platform: iOS
+    sources:
+      - iosApp
+    info:
+      path: iosApp/Info.plist
+      properties:
+        CFBundleDisplayName: PageCurl Sample
+        UILaunchScreen: {}
+        CADisableMinimumFrameDurationOnPhone: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: eu.wewox.pagecurl.sample
+        PRODUCT_NAME: PageCurl Sample
+        FRAMEWORK_SEARCH_PATHS: $(inherited) $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)
+        OTHER_LDFLAGS: $(inherited) -framework SampleShared
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    preBuildScripts:
+      - name: Compile Kotlin Framework
+        basedOnDependencyAnalysis: false
+        script: |
+          if [ "YES" = "$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED" ]; then
+            echo "Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED"
+            exit 0
+          fi
+          if [ -z "$JAVA_HOME" ]; then
+            if [ -d /opt/homebrew/opt/openjdk@21 ]; then
+              export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+            elif /usr/libexec/java_home -v 21 >/dev/null 2>&1; then
+              export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+            fi
+          fi
+          cd "$SRCROOT/../.."
+          ./gradlew :sample:shared:embedAndSignAppleFrameworkForXcode

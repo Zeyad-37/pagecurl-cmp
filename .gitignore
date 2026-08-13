@@ -7,3 +7,8 @@ build/
 /captures
 .externalNativeBuild
 .cxx
+
+# Xcode / iOS sample
+sample/iosApp/build/
+*.xcuserdata/
+xcuserdata/

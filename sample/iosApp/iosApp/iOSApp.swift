@@ -1,0 +1,21 @@
+import SwiftUI
+import SampleShared
+
+@main
+struct iOSApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ComposeView()
+                .ignoresSafeArea()
+        }
+    }
+}
+
+/// Hosts the shared Compose Multiplatform UI (the PageCurl demo book).
+struct ComposeView: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        MainViewControllerKt.MainViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}

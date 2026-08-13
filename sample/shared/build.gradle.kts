@@ -8,28 +8,32 @@ plugins {
 }
 
 kotlin {
-    explicitApi()
     applyDefaultHierarchyTemplate()
 
     androidLibrary {
-        namespace = "eu.wewox.pagecurl"
+        namespace = "eu.wewox.pagecurl.sample.shared"
         compileSdk = libs.versions.compileSdk.get().toInt()
-        minSdk = libs.versions.minSdk.get().toInt()
+        minSdk = libs.versions.minSdkSample.get().toInt()
         compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
     }
 
-    iosArm64()
-    iosSimulatorArm64()
-
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "SampleShared"
+            isStatic = true
+        }
     }
 
     sourceSets {
         commonMain.dependencies {
+            api(project(":pagecurl"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
+            implementation(libs.compose.material3)
         }
     }
 }
