@@ -90,6 +90,13 @@ fun DemoApp() {
             ) { index ->
                 BookPage(page = pages[index], number = index + 1)
             }
+
+            FpsOverlay(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .safeDrawingPadding()
+                    .padding(8.dp),
+            )
         }
     }
 }

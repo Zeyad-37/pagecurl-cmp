@@ -15,10 +15,17 @@ targets:
         CFBundleDisplayName: PageCurl Sample
         UILaunchScreen: {}
         CADisableMinimumFrameDurationOnPhone: true
+        ITSAppUsesNonExemptEncryption: false
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: eu.wewox.pagecurl.sample
+        PRODUCT_BUNDLE_IDENTIFIER: com.zeyadgasser.pagecurl.sample
         PRODUCT_NAME: PageCurl Sample
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        DEVELOPMENT_TEAM: 9B99T72URM
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
         FRAMEWORK_SEARCH_PATHS: $(inherited) $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)
         OTHER_LDFLAGS: $(inherited) -framework SampleShared
         ENABLE_USER_SCRIPT_SANDBOXING: NO
