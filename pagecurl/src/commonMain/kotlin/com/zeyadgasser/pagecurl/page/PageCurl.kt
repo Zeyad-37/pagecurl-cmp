@@ -78,8 +78,16 @@ public fun PageCurl(
                     onTapBackward = state::prev,
                 )
         ) {
-            // Wrap in key to synchronize state updates
-            key(updatedCurrent, internalState.forward.value, internalState.backward.value) {
+            // Wrap in key to synchronize state updates when the current page changes.
+            //
+            // Changed vs upstream: upstream also keyed on `forward.value`/`backward.value` — the
+            // ANIMATED edges — which produced a new compound key every animation frame, so key()
+            // discarded and rebuilt the entire page subtree (~every frame of a curl), destroying
+            // each page's `remember` state and dominating the animation's CPU cost for non-trivial
+            // page content. Page emission order and count depend only on `updatedCurrent`; the edge
+            // values are read below as plain state reads, so edge changes recompose this scope
+            // (updating the drawCurl modifiers) without discarding the pages' composition.
+            key(updatedCurrent) {
                 if (updatedCurrent + 1 < state.max) {
                     content(updatedCurrent + 1)
                 }

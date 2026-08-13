@@ -182,6 +182,16 @@ public fun rememberPageCurlConfig(
             tapInteraction = tapInteraction,
             onCustomTap = onCustomTap
         )
+    }.also { config ->
+        // Changed vs upstream: the saver restores the config entirely from SAVED values, and the
+        // keyless rememberSaveable only reads the factory parameters on first creation — so a
+        // theme-derived color passed here (the dominant use-case for backPageColor/shadowColor)
+        // stayed pinned to the value captured at creation/save time across theme switches and
+        // state restoration. Re-assert the color parameters on every call so callers passing
+        // reactive theme colors always render with the current theme; the interaction fields keep
+        // upstream's semantics (mutable at runtime via the config object, survive save/restore).
+        config.backPageColor = backPageColor
+        config.shadowColor = shadowColor
     }
 
 /**
@@ -344,11 +354,14 @@ public class PageCurlConfig(
     }
 }
 
+/** The normalised midpoint of the page (0..1 coordinate space). */
+private const val PAGE_MIDPOINT = 0.5f
+
 /** The full size of the PageCurl. */
 private fun full(): Rect = Rect(0.0f, 0.0f, 1.0f, 1.0f)
 
 /** The left half of the PageCurl. */
-private fun leftHalf(): Rect = Rect(0.0f, 0.0f, 0.5f, 1.0f)
+private fun leftHalf(): Rect = Rect(0.0f, 0.0f, PAGE_MIDPOINT, 1.0f)
 
 /** The right half of the PageCurl. */
-private fun rightHalf(): Rect = Rect(0.5f, 0.0f, 1.0f, 1.0f)
+private fun rightHalf(): Rect = Rect(PAGE_MIDPOINT, 0.0f, 1.0f, 1.0f)

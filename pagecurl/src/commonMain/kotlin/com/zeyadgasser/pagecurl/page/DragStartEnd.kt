@@ -1,5 +1,4 @@
 // Vendored from oleksandrbalan/pagecurl v1.5.1 (Apache-2.0), verbatim — CMP-clean, no changes required
-// See docs/rfc/T-037-RFC-CMP-PageCurl-Fork.md
 package com.zeyadgasser.pagecurl.page
 
 import androidx.compose.runtime.rememberUpdatedState

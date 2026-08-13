@@ -159,16 +159,22 @@ private fun CacheDrawScope.prepareCurl(
     val lineVector = topCurlOffset - bottomCurlOffset
     val angle = PI.toFloat() - atan2(lineVector.y, lineVector.x) * 2
 
-    // Shadow parameters derived from config (passed to the platform expect function)
-    val shadowRadius = if (config.shadowAlpha == 0f || config.shadowRadius == 0.dp) 0f else config.shadowRadius.toPx()
-    val shadowAlpha = config.shadowAlpha
-    val shadowColor = config.shadowColor
-    val shadowOffset = if (shadowRadius > 0f) {
-        Offset(-config.shadowOffset.x.toPx(), config.shadowOffset.y.toPx())
-            .rotate(2 * PI.toFloat() - angle)
-    } else {
-        Offset.Zero
-    }
+    // Prepare the platform shadow draw ONCE per cache invalidation (mirrors upstream's
+    // CacheDrawScope prepareShadow): paints/paths/bitmaps are built here, and the returned lambda
+    // only issues draw calls — the per-frame draw path allocates nothing.
+    val drawShadow: ContentDrawScope.() -> Unit =
+        if (config.shadowAlpha == 0f || config.shadowRadius == 0.dp) {
+            { /* No shadow is requested */ }
+        } else {
+            prepareCurlPageShadow(
+                polygon = polygon,
+                shadowColor = config.shadowColor,
+                shadowAlpha = config.shadowAlpha,
+                shadowRadius = config.shadowRadius.toPx(),
+                shadowOffset = Offset(-config.shadowOffset.x.toPx(), config.shadowOffset.y.toPx())
+                    .rotate(2 * PI.toFloat() - angle),
+            )
+        }
 
     return result@{
         withTransform({
@@ -177,16 +183,8 @@ private fun CacheDrawScope.prepareCurl(
             // Rotate the drawing according to the curl line
             rotateRad(angle, pivot = bottomCurlOffset)
         }) {
-            // Draw shadow first via expect/actual platform implementation
-            if (shadowRadius > 0f) {
-                this@result.drawCurlPageShadow(
-                    polygon = polygon,
-                    shadowColor = shadowColor,
-                    shadowAlpha = shadowAlpha,
-                    shadowRadius = shadowRadius,
-                    shadowOffset = shadowOffset,
-                )
-            }
+            // Draw shadow first via the prepared platform lambda
+            this@result.drawShadow()
 
             // And finally draw the back-page with an overlay with alpha
             clipPath(polygon.toPath()) {
@@ -200,22 +198,30 @@ private fun CacheDrawScope.prepareCurl(
 }
 
 /**
- * Platform-specific shadow rendering for the page curl effect.
+ * Prepares the platform-specific shadow rendering for the page curl effect. Runs in
+ * [CacheDrawScope] (once per geometry change); the returned lambda runs per frame and must not
+ * allocate.
  *
- * On Android: uses [android.graphics.Paint.setShadowLayer] via `nativeCanvas.drawPath`.
- * On iOS: approximated with a Compose-native gradient [Brush] drawn along the polygon boundary.
+ * On Android: `Paint.setShadowLayer` + `nativeCanvas.drawPath` on API 28+; below API 28 the shadow
+ * is rasterized into a software bitmap (hardware canvases only honor `setShadowLayer` for text
+ * before 28 — upstream's `prepareShadowImage` fallback, required while minSdk < 28).
+ * On iOS: a Skia blur `MaskFilter` on the shadow path — the same blur model as Android, so the
+ * `shadowRadius`/`shadowOffset`/`shadowAlpha` config parameters mean the same thing on both
+ * platforms.
  *
- * @param polygon The shadow polygon (the curled page shape, offset outward by [shadowRadius]).
+ * @param polygon The curled page shape (the shadow is this polygon offset outward by
+ *   [shadowRadius] and shifted by [shadowOffset]).
  * @param shadowColor The base color of the shadow (alpha is controlled by [shadowAlpha]).
  * @param shadowAlpha The opacity of the shadow (0f = invisible, 1f = fully opaque).
  * @param shadowRadius The blur radius of the shadow, in pixels.
- * @param shadowOffset The offset of the shadow relative to the polygon, already rotated to match the curl angle.
+ * @param shadowOffset The offset of the shadow relative to the polygon, already rotated to match
+ *   the curl angle.
  */
 @ExperimentalPageCurlApi
-internal expect fun ContentDrawScope.drawCurlPageShadow(
+internal expect fun CacheDrawScope.prepareCurlPageShadow(
     polygon: Polygon,
     shadowColor: Color,
     shadowAlpha: Float,
     shadowRadius: Float,
     shadowOffset: Offset,
-)
+): ContentDrawScope.() -> Unit

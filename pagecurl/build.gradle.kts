@@ -25,6 +25,8 @@ kotlin {
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
         compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
+        // JVM-hosted unit tests (task: testAndroidHostTest) — runs the commonTest suite.
+        withHostTest { }
     }
 
     iosArm64()
@@ -39,6 +41,10 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

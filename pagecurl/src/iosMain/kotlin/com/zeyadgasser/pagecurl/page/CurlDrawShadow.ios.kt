@@ -1,54 +1,55 @@
-// iOS actual for the CMP expect fun ContentDrawScope.drawCurlPageShadow(...)
-// Approximates the page-curl shadow using a Compose-native linear gradient Brush drawn over the polygon path.
-// No Apple/UIKit APIs are used — this is pure Compose Multiplatform.
-// See docs/rfc/T-037-RFC-CMP-PageCurl-Fork.md
+// iOS actual for the CMP expect fun CacheDrawScope.prepareCurlPageShadow(...)
+// Uses a Skia blur MaskFilter on the shadow path — the same Gaussian-blur model Android's
+// setShadowLayer uses, so shadowRadius/shadowOffset/shadowAlpha render equivalently on both
+// platforms. (Replaces the earlier centroid-anchored linear-gradient approximation, whose
+// geometry was unrelated to the per-edge falloff the config parameters describe.)
 package com.zeyadgasser.pagecurl.page
 
+import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.asSkiaPath
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import com.zeyadgasser.pagecurl.ExperimentalPageCurlApi
 import com.zeyadgasser.pagecurl.utils.Polygon
+import org.jetbrains.skia.FilterBlurMode
+import org.jetbrains.skia.MaskFilter
+
+// Android's BlurMaskFilter radius -> sigma conversion (see Skia's SkBlurMask::ConvertRadiusToSigma),
+// used so the same shadowRadius value produces the same visual blur extent as setShadowLayer.
+private const val BLUR_RADIUS_TO_SIGMA = 0.57735f
+private const val BLUR_SIGMA_BIAS = 0.5f
 
 @ExperimentalPageCurlApi
-internal actual fun ContentDrawScope.drawCurlPageShadow(
+internal actual fun CacheDrawScope.prepareCurlPageShadow(
     polygon: Polygon,
     shadowColor: Color,
     shadowAlpha: Float,
     shadowRadius: Float,
     shadowOffset: Offset,
-) {
-    // Compute the centroid of the polygon to establish the gradient direction.
-    // The gradient runs from the polygon interior (semi-transparent shadow) to the exterior (transparent),
-    // approximating the visual blur produced by setShadowLayer on Android.
-    val vertices = polygon.vertices
-    if (vertices.size < 3) return
-
-    val centroid = Offset(
-        x = vertices.sumOf { it.x.toDouble() }.toFloat() / vertices.size,
-        y = vertices.sumOf { it.y.toDouble() }.toFloat() / vertices.size,
-    )
-
-    // The shadow extends outward from the polygon edge by shadowRadius.
-    // The gradient start is at the centroid (opaque shadow), end is shadowRadius beyond the edge boundary.
-    val gradientEnd = centroid + shadowOffset.let { delta ->
-        // Normalise the shadow offset direction and scale to shadowRadius
-        val dist = delta.getDistance().coerceAtLeast(1f)
-        Offset(delta.x / dist * shadowRadius, delta.y / dist * shadowRadius)
+): ContentDrawScope.() -> Unit {
+    // Build the blurred paint + the offset shadow path once per cache invalidation; the returned
+    // per-frame lambda only issues the draw call.
+    val paint = Paint().apply { color = shadowColor.copy(alpha = shadowAlpha) }
+    val frameworkPaint = paint.asFrameworkPaint().apply {
+        maskFilter = MaskFilter.makeBlur(
+            FilterBlurMode.NORMAL,
+            shadowRadius * BLUR_RADIUS_TO_SIGMA + BLUR_SIGMA_BIAS,
+        )
     }
+    // setShadowLayer semantics: the blurred silhouette of the (expanded) path, drawn at the offset.
+    val path = polygon
+        .translate(shadowOffset)
+        .offset(shadowRadius)
+        .toPath()
+        .asSkiaPath()
 
-    val shadowBrush = Brush.linearGradient(
-        colors = listOf(
-            shadowColor.copy(alpha = shadowAlpha),
-            shadowColor.copy(alpha = 0f),
-        ),
-        start = centroid,
-        end = gradientEnd,
-    )
-
-    // Draw the expanded shadow polygon filled with the gradient
-    val shadowPath: Path = polygon.offset(shadowRadius).toPath()
-    drawPath(path = shadowPath, brush = shadowBrush)
+    return {
+        drawIntoCanvas { canvas ->
+            canvas.nativeCanvas.drawPath(path, frameworkPaint)
+        }
+    }
 }

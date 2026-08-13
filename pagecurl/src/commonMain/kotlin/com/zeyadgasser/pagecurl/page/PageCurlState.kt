@@ -168,10 +168,15 @@ public class PageCurlState(
     /**
      * Instantly snaps the state to the given page.
      *
+     * Safe to call before the [PageCurl] composable's first layout: until [setup] runs, [max] is
+     * still 0 and the range `0..max-1` is empty — coercing into it would throw
+     * `IllegalArgumentException` ("Cannot coerce value to an empty range"). In that window the
+     * value is only floored at 0; [setup] clamps it against the real page count on first layout.
+     *
      * @param value The page to snap to.
      */
     public suspend fun snapTo(value: Int) {
-        current = value.coerceIn(0, max - 1)
+        current = if (max > 0) value.coerceIn(0, max - 1) else value.coerceAtLeast(0)
         internalState?.reset()
     }
 

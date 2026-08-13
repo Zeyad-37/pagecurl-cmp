@@ -34,7 +34,7 @@ first release has not shipped yet — until then, build from source with
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.zeyad-37:pagecurl-cmp:2.0.0")
+            implementation("io.github.zeyad-37:pagecurl-cmp:2.1.0")
         }
     }
 }

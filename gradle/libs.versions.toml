@@ -10,8 +10,12 @@ compose-multiplatform = "1.11.1"
 compose-material3 = "1.9.0"
 activity-compose = "1.13.0"
 
+kotlinx-coroutines-test = "1.11.0"
+
 [libraries]
 androidx-activitycompose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
