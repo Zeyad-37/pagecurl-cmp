@@ -1,6 +1,6 @@
 name: iosApp
 options:
-  bundleIdPrefix: eu.wewox.pagecurl
+  bundleIdPrefix: com.zeyadgasser.pagecurl
   deploymentTarget:
     iOS: "15.0"
 targets:

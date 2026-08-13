@@ -1,147 +1,108 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.oleksandrbalan/pagecurl.svg?label=Maven%20Central)](https://mvnrepository.com/artifact/io.github.oleksandrbalan/pagecurl)
-
 <img align="right" src="https://user-images.githubusercontent.com/20944869/200791917-a2436c9a-d062-4c14-9c71-c94fe8703061.png">
 
-# Page Curl
+# PageCurl for Compose Multiplatform
 
-Page Curl library for Jetpack Compose.
+Page curl (page turn) effect for **Compose Multiplatform** — Android and iOS from one Kotlin codebase.
 
-> **This fork: Compose Multiplatform (Android + iOS).**
-> The `cmp` branch converts the library into a Compose Multiplatform module targeting
-> `android`, `iosArm64` and `iosSimulatorArm64`. All gesture, state and geometry code is
-> `commonMain`; the only platform-specific piece is the page-edge shadow
-> (`expect fun DrawScope.drawCurlPageShadow`): Android keeps the original
-> `Paint.setShadowLayer` blur, iOS draws a Compose-native gradient shadow.
->
-> A multiplatform sample lives in `sample/` — `sample/shared` holds the demo UI
-> (one Kotlin codebase), `sample/androidApp` is the Android app, and `sample/iosApp`
-> is the Xcode app (project generated from `project.yml` via
-> [XcodeGen](https://github.com/yonaskolb/XcodeGen); the generated `.xcodeproj` is
-> committed, so XcodeGen is only needed to regenerate it). The legacy Android-only
-> `demo/` module is kept for reference but is no longer wired into the build.
+This is a multiplatform fork of [oleksandrbalan/pagecurl](https://github.com/oleksandrbalan/pagecurl)
+(Apache-2.0). The original library is Android-only; this fork moves all gesture, state and
+curl-geometry code to `commonMain` and keeps only the page-edge shadow platform-specific
+(`expect fun DrawScope.drawCurlPageShadow`): Android uses the original native blur
+(`Paint.setShadowLayer`), iOS draws a Compose-native gradient shadow.
 
 ## Motivation
 
-This library allows to create an effect of turning pages, which can be used in book reader applications, custom on-boarding screens or elsewhere.
+Create an effect of turning pages, which can be used in book reader applications, custom
+on-boarding screens or elsewhere — on both mobile platforms, with identical behavior.
+
+## Platforms
+
+| Target | Status |
+|---|---|
+| Android (`minSdk 21`) | ✅ Same behavior as upstream, native blur shadow |
+| iOS (`iosArm64`, `iosSimulatorArm64`) | ✅ Verified on device at a steady 60 fps |
 
 ## Usage
 
 ### Get a dependency
 
-**Step 1.** Add the MavenCentral repository to your build file.
-Add it in your root `build.gradle.kts` at the end of repositories:
+Coordinates: `io.github.zeyad-37:pagecurl-cmp` *(Maven Central publishing is configured but the
+first release has not shipped yet — until then, build from source with
+`./gradlew :pagecurl:publishToMavenLocal` and add `mavenLocal()` to your repositories.)*
+
 ```kotlin
-allprojects {
-    repositories {
-        ...
-        mavenCentral()
-    }
-}
-```
-
-Or in `settings.gradle.kts`:
-```kotlin
-dependencyResolutionManagement {
-    repositories {
-        ...
-        mavenCentral()
-    }
-}
-```
-
-**Step 2.** Add the dependency.
-Check latest version on the [releases page](https://github.com/oleksandrbalan/pagecurl/releases).
-```kotlin
-dependencies {
-    implementation("io.github.oleksandrbalan:pagecurl:$version")
-}
-```
-
-### Use in Composable
-
-The `PageCurl` has 2 mandatory arguments:
-* **count** - The count of pages.
-* **content** - The content lambda to provide the page composable. Receives the page number.
-
-```
-val pages = listOf("One", "Two", "Three")
-PageCurl(count = pages.size) { index ->
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .background(MaterialTheme.colors.background)
-            .fillMaxSize()
-    ) {
-        Text(
-            text = pages[index],
-            style = MaterialTheme.typography.h1,
-        )
-    }
-}
-```
-
-Optionally `state` could be provided to observe and manage PageCurl state.
-* **state** - The state of the PageCurl. Use it to programmatically change the current page or observe changes, and to configure shadow, back-page and interactions.
-```
-Column {
-    val scope = rememberCoroutineScope()
-    val state = rememberPageCurlState()
-    Button(onClick = { scope.launch { state.next() } }) {
-        Text(text = "Next")
-    }
-
-    val pages = listOf("One", "Two", "Three")
-    PageCurl(
-        count = pages.size,
-        state = state,
-    ) { index ->
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .background(MaterialTheme.colors.background)
-                .fillMaxSize()
-        ) {
-            Text(
-                text = pages[index],
-                style = MaterialTheme.typography.h1,
-            )
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("io.github.zeyad-37:pagecurl-cmp:2.0.0")
         }
     }
 }
 ```
 
-Optionally `key` lambda could be provided with stable key for each item. PageCurl with keys for each page will correctly preserve a current position when items are added or removed.
-* **key** - The lambda to provide stable key for each item. Useful when adding and removing items before current page.
-```
-Column {
-    var pages by remember { mutableStateOf(listOf("Four", "Five", "Six")) }
-    Button(onClick = { pages = listOf("One", "Two", "Three") + pages }) {
-        Text(text = "Prepend new pages")
-    }
+> Note: the classes live in the `com.zeyadgasser.pagecurl` package (renamed from upstream's
+> `eu.wewox.pagecurl` so both libraries can coexist on an Android classpath).
 
-    PageCurl(
-        count = pages.size,
-        key = { pages[it].hashCode() },
-    ) { index ->
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .background(MaterialTheme.colors.background)
-                .fillMaxSize()
-        ) {
-            Text(
-                text = pages[index],
-                style = MaterialTheme.typography.h1,
-            )
-        }
+### Use in Compose
+
+Provide a count of pages and content for each page, exactly like the upstream API:
+
+```kotlin
+@OptIn(ExperimentalPageCurlApi::class)
+@Composable
+fun Book(pages: List<String>) {
+    PageCurl(count = pages.size) { index ->
+        Text(pages[index])
     }
 }
 ```
 
-See Demo application and [examples](demo/src/main/kotlin/eu/wewox/pagecurl/screens) for more usage examples.
+Drag from the right edge to turn a page forward, from the left edge to go back; taps on the
+right / left half work too. Use `rememberPageCurlState()` to observe or drive the current page
+programmatically, and `rememberPageCurlConfig()` to configure shadow color / alpha / radius /
+offset, back-page color, and drag & tap interaction zones.
 
-https://user-images.githubusercontent.com/20944869/185782671-2861c2ed-c033-4318-bf12-1d8db74fc8b5.mp4
+## Samples
 
-https://user-images.githubusercontent.com/20944869/185782668-b52da2b9-be8d-49db-8729-88b6f9a8ee48.mp4
+The `sample/` directory contains one shared demo UI (`sample/shared`, plain `commonMain`
+Compose) consumed by both platform apps — including an on-screen FPS readout, useful when
+judging curl smoothness on a real device:
 
-https://user-images.githubusercontent.com/20944869/185782663-4bd97a57-1a46-408d-a07b-34c193f01aba.mp4
+- **Android**: `./gradlew :sample:androidApp:installDebug`
+- **iOS**: open `sample/iosApp/iosApp.xcodeproj` in Xcode and run. The project is generated
+  from `project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen); the generated
+  `.xcodeproj` is committed, so XcodeGen is only needed if you change `project.yml`.
+
+The legacy Android-only `demo/` module from upstream has been removed — the multiplatform
+sample replaces it.
+
+## Versioning
+
+Forked from upstream `v1.5.1`. This fork starts at `2.0.0` to signal the package rename and
+the multiplatform conversion; it is not binary-compatible with `io.github.oleksandrbalan:pagecurl`.
+
+## Credits
+
+All of the curl mathematics, gesture handling and API design come from
+[Oleksandr Balan](https://github.com/oleksandrbalan)'s excellent
+[pagecurl](https://github.com/oleksandrbalan/pagecurl) library. This fork only ports it to
+Compose Multiplatform.
+
+## License
+
+```
+Copyright 2022 Oleksandr Balan
+Copyright 2026 Zeyad Gasser (Compose Multiplatform conversion)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```

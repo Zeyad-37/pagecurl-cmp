@@ -11,7 +11,7 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     androidLibrary {
-        namespace = "eu.wewox.pagecurl.sample.shared"
+        namespace = "com.zeyadgasser.pagecurl.sample.shared"
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdkSample.get().toInt()
         compilerOptions.jvmTarget.set(JvmTarget.JVM_21)

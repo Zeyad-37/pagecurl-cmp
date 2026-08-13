@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "eu.wewox.pagecurl.sample.android"
+    namespace = "com.zeyadgasser.pagecurl.sample.android"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "eu.wewox.pagecurl.sample"
+        applicationId = "com.zeyadgasser.pagecurl.sample"
         minSdk = libs.versions.minSdkSample.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1

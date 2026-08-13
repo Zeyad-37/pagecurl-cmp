@@ -5,6 +5,15 @@ plugins {
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.mavenPublish)
+}
+
+mavenPublishing {
+    // Sign only when a key is available (CI provides it via ORG_GRADLE_PROJECT_signingInMemoryKey);
+    // local publishToMavenLocal stays unsigned.
+    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+        signAllPublications()
+    }
 }
 
 kotlin {
@@ -12,7 +21,7 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     androidLibrary {
-        namespace = "eu.wewox.pagecurl"
+        namespace = "com.zeyadgasser.pagecurl"
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
         compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
