@@ -7,8 +7,8 @@ Page curl (page turn) effect for **Compose Multiplatform** — Android and iOS f
 This is a multiplatform fork of [oleksandrbalan/pagecurl](https://github.com/oleksandrbalan/pagecurl)
 (Apache-2.0). The original library is Android-only; this fork moves all gesture, state and
 curl-geometry code to `commonMain` and keeps only the page-edge shadow platform-specific
-(`expect fun DrawScope.drawCurlPageShadow`): Android uses the original native blur
-(`Paint.setShadowLayer`), iOS draws a Compose-native gradient shadow.
+(`expect fun CacheDrawScope.prepareCurlPageShadow`): Android uses the original native blur
+(`Paint.setShadowLayer`, with upstream's software-bitmap fallback below API 28); iOS uses a Skia blur `MaskFilter` with the same radius→sigma model, so shadow parameters render equivalently on both platforms.
 
 ## Motivation
 
