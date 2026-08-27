@@ -8,15 +8,16 @@ package com.zeyadgasser.pagecurl.page
 import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asSkiaPath
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.skiaCanvas
+import androidx.compose.ui.graphics.toArgb
 import com.zeyadgasser.pagecurl.ExperimentalPageCurlApi
 import com.zeyadgasser.pagecurl.utils.Polygon
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.MaskFilter
+import org.jetbrains.skia.Paint
 
 // Android's BlurMaskFilter radius -> sigma conversion (see Skia's SkBlurMask::ConvertRadiusToSigma),
 // used so the same shadowRadius value produces the same visual blur extent as setShadowLayer.
@@ -33,8 +34,11 @@ internal actual fun CacheDrawScope.prepareCurlPageShadow(
 ): ContentDrawScope.() -> Unit {
     // Build the blurred paint + the offset shadow path once per cache invalidation; the returned
     // per-frame lambda only issues the draw call.
-    val paint = Paint().apply { color = shadowColor.copy(alpha = shadowAlpha) }
-    val frameworkPaint = paint.asFrameworkPaint().apply {
+    // A Skia Paint directly: only the mask filter is needed, which the Compose Paint wrapper
+    // does not expose anyway. Antialias on, matching the wrapper's default.
+    val frameworkPaint = Paint().apply {
+        isAntiAlias = true
+        color = shadowColor.copy(alpha = shadowAlpha).toArgb()
         maskFilter = MaskFilter.makeBlur(
             FilterBlurMode.NORMAL,
             shadowRadius * BLUR_RADIUS_TO_SIGMA + BLUR_SIGMA_BIAS,
@@ -49,7 +53,7 @@ internal actual fun CacheDrawScope.prepareCurlPageShadow(
 
     return {
         drawIntoCanvas { canvas ->
-            canvas.nativeCanvas.drawPath(path, frameworkPaint)
+            canvas.skiaCanvas.drawPath(path, frameworkPaint)
         }
     }
 }

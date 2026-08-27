@@ -127,7 +127,7 @@ internal suspend fun PointerInputScope.detectCustomDragGestures(
                 onDrag(it, it.positionChange())
                 it.consume()
             }
-            onDragEnd(drag?.position ?: down.position, completed)
+            onDragEnd(drag.position, completed)
         }
     }
 }

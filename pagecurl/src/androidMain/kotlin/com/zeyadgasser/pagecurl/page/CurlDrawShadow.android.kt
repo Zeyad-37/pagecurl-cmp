@@ -8,11 +8,11 @@ package com.zeyadgasser.pagecurl.page
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Paint
 import android.os.Build
 import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -32,10 +32,11 @@ internal actual fun CacheDrawScope.prepareCurlPageShadow(
     shadowRadius: Float,
     shadowOffset: Offset,
 ): ContentDrawScope.() -> Unit {
-    val paint = Paint().apply {
-        val frameworkPaint = asFrameworkPaint()
-        frameworkPaint.color = shadowColor.copy(alpha = 0f).toArgb()
-        frameworkPaint.setShadowLayer(
+    // A framework Paint directly: only setShadowLayer is needed, which the Compose Paint wrapper
+    // does not expose anyway. ANTI_ALIAS_FLAG matches the wrapper's default.
+    val frameworkPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = shadowColor.copy(alpha = 0f).toArgb()
+        setShadowLayer(
             shadowRadius,
             shadowOffset.x,
             shadowOffset.y,
@@ -45,7 +46,6 @@ internal actual fun CacheDrawScope.prepareCurlPageShadow(
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         val path = polygon.offset(shadowRadius).toPath().asAndroidPath()
-        val frameworkPaint = paint.asFrameworkPaint()
         val draw: ContentDrawScope.() -> Unit = {
             drawIntoCanvas { canvas ->
                 canvas.nativeCanvas.drawPath(path, frameworkPaint)
@@ -67,7 +67,7 @@ internal actual fun CacheDrawScope.prepareCurlPageShadow(
                 .translate(Offset(pad, pad))
                 .offset(shadowRadius).toPath()
                 .asAndroidPath(),
-            paint.asFrameworkPaint(),
+            frameworkPaint,
         )
         val draw: ContentDrawScope.() -> Unit = {
             drawIntoCanvas { canvas ->
