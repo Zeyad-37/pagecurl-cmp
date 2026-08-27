@@ -84,6 +84,39 @@ judging curl smoothness on a real device:
 The legacy Android-only `demo/` module from upstream has been removed — the multiplatform
 sample replaces it.
 
+## Snapshots
+
+Every push to `cmp` publishes a snapshot of the next patch version (for example `2.1.1-SNAPSHOT`)
+to the Central Portal snapshot repository, available within minutes. To consume one, add the
+repository and point at the snapshot version:
+
+```kotlin
+repositories {
+    maven("https://central.sonatype.com/repository/maven-snapshots/") {
+        mavenContent { snapshotsOnly() }
+    }
+}
+```
+
+Snapshots are for pre-release integration testing; releases on Maven Central remain the way to
+depend on this library.
+
+## Developing against an app
+
+When iterating on a fix inside an app that consumes this library, skip the publish cycle entirely
+with a Gradle composite build. In the app's `settings.gradle.kts`:
+
+```kotlin
+if (providers.gradleProperty("pagecurl.dev").isPresent) {
+    includeBuild(providers.gradleProperty("pagecurl.dev").get().ifEmpty { "../pagecurl" })
+}
+```
+
+Then build the app with `-Ppagecurl.dev` (or `-Ppagecurl.dev=/path/to/pagecurl`): Gradle
+substitutes the published `io.github.zeyad-37:pagecurl-cmp` with this source checkout, so edits
+here show up in the app on the next build with no publishing involved. The flag keeps CI and
+other machines on the released artifact.
+
 ## Versioning
 
 Forked from upstream `v1.5.1`. This fork starts at `2.0.0` to signal the package rename and
