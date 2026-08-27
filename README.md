@@ -24,6 +24,14 @@ on-boarding screens or elsewhere — on both mobile platforms, with identical be
 | Android (`minSdk 21`) | ✅ Same behavior as upstream, native blur shadow |
 | iOS (`iosArm64`, `iosSimulatorArm64`) | ✅ Verified on device at a steady 60 fps |
 
+## Demo
+
+| Android | iOS |
+|---|---|
+| ![The sample app on an Android emulator: dragging pages forward and back with the curl following the finger](docs/demo/pagecurl-android.gif) | ![The sample app on an iOS simulator: the same drags, same Kotlin code, with the simulator's fps overlay reading 60](docs/demo/pagecurl-ios.gif) |
+
+Both recordings are the sample app in this repo — same `commonMain` composable on both platforms.
+
 ## Usage
 
 ### Get a dependency
