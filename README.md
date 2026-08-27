@@ -2,6 +2,8 @@
 
 # PageCurl for Compose Multiplatform
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.zeyad-37/pagecurl-cmp)](https://central.sonatype.com/artifact/io.github.zeyad-37/pagecurl-cmp)
+
 Page curl (page turn) effect for **Compose Multiplatform** — Android and iOS from one Kotlin codebase.
 
 This is a multiplatform fork of [oleksandrbalan/pagecurl](https://github.com/oleksandrbalan/pagecurl)
@@ -26,9 +28,7 @@ on-boarding screens or elsewhere — on both mobile platforms, with identical be
 
 ### Get a dependency
 
-Coordinates: `io.github.zeyad-37:pagecurl-cmp` *(Maven Central publishing is configured but the
-first release has not shipped yet — until then, build from source with
-`./gradlew :pagecurl:publishToMavenLocal` and add `mavenLocal()` to your repositories.)*
+Available on [Maven Central](https://central.sonatype.com/artifact/io.github.zeyad-37/pagecurl-cmp):
 
 ```kotlin
 kotlin {
