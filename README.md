@@ -1,4 +1,4 @@
-<img align="right" src="https://user-images.githubusercontent.com/20944869/200791917-a2436c9a-d062-4c14-9c71-c94fe8703061.png">
+<img align="right" width="230" src="docs/demo/pagecurl-ios.gif" alt="The sample app curling pages on an iOS simulator at 60 fps">
 
 # PageCurl for Compose Multiplatform
 
