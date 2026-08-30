@@ -12,6 +12,10 @@ curl-geometry code to `commonMain` and keeps only the page-edge shadow platform-
 (`expect fun CacheDrawScope.prepareCurlPageShadow`): Android uses the original native blur
 (`Paint.setShadowLayer`, with upstream's software-bitmap fallback below API 28); iOS uses a Skia blur `MaskFilter` with the same radius→sigma model, so shadow parameters render equivalently on both platforms.
 
+The story behind the port — what actually blocks a "commonMain-clean" library, the shadow
+expect/actual, and the on-device 60 fps verification — is written up in
+[Turning the Page: a Real Page Curl on iOS with Compose Multiplatform](https://medium.com/@zeyad.gasser/turning-the-page-a-real-page-curl-on-ios-with-compose-multiplatform-608ffd4acbdd).
+
 ## Motivation
 
 Create an effect of turning pages, which can be used in book reader applications, custom
